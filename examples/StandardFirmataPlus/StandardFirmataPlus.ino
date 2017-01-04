@@ -52,6 +52,8 @@
 // Arduino IDE v1.6.6 or higher. Hardware serial should work back to Arduino 1.0.
 #include "utility/SerialFirmata.h"
 
+#include "utility/SPIFirmata.h"
+
 #define I2C_WRITE                   B00000000
 #define I2C_READ                    B00001000
 #define I2C_READ_CONTINUOUSLY       B00010000
@@ -74,6 +76,10 @@
 
 #ifdef FIRMATA_SERIAL_FEATURE
 SerialFirmata serialFeature;
+#endif
+
+#ifdef FIRMATA_SPI_FEATURE
+SPIFirmata spiFeature;
 #endif
 
 /* analog inputs */
@@ -378,6 +384,11 @@ void setPinModeCallback(byte pin, int mode)
     case PIN_MODE_SERIAL:
 #ifdef FIRMATA_SERIAL_FEATURE
       serialFeature.handlePinMode(pin, PIN_MODE_SERIAL);
+#endif
+      break;
+    case PIN_MODE_SPI:
+#ifdef FIRMATA_SPI_FEATURE
+      spiFeature.handlePinMode(pin, PIN_MODE_SPI);
 #endif
       break;
     default:
@@ -685,6 +696,9 @@ void sysexCallback(byte command, byte argc, byte *argv)
 #ifdef FIRMATA_SERIAL_FEATURE
         serialFeature.handleCapability(pin);
 #endif
+#ifdef FIRMATA_SPI_FEATURE
+        spiFeature.handleCapability(pin);
+#endif
         Firmata.write(127);
       }
       Firmata.write(END_SYSEX);
@@ -718,6 +732,12 @@ void sysexCallback(byte command, byte argc, byte *argv)
       serialFeature.handleSysex(command, argc, argv);
 #endif
       break;
+
+    case SPI_DATA:
+#ifdef FIRMATA_SPI_FEATURE
+      spiFeature.handleSysex(command, argc, argv);
+#endif
+      break;
   }
 }
 
@@ -734,6 +754,10 @@ void systemResetCallback()
 
 #ifdef FIRMATA_SERIAL_FEATURE
   serialFeature.reset();
+#endif
+
+#ifdef FIRMATA_SPI_FEATURE
+  spiFeature.reset();
 #endif
 
   if (isI2CEnabled) {
