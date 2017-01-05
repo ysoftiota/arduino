@@ -51,6 +51,32 @@
 #define SPI_DEVICE_ID_MASK          0x7C
 #define SPI_BIT_ORDER_MASK          0x01
 
+namespace {
+// TODO - check Teensy and other non SAM, SAMD or AVR variants
+#if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_SAM)
+  inline BitOrder getBitOrder(uint8_t value) {
+    if (value == 0) return LSBFIRST;
+    return MSBFIRST; // default
+  }
+#else
+  inline uint8_t getBitOrder(uint8_t value) {
+    if (value == 0) return LSBFIRST;
+    return MSBFIRST; // default
+  }
+#endif
+
+  inline uint8_t getDataMode(uint8_t value) {
+    if (value == 1) {
+      return SPI_MODE1;
+    } else if (value == 2) {
+      return SPI_MODE2;
+    } else if (value == 3) {
+      return SPI_MODE3;
+    }
+    return SPI_MODE0; // default
+  }
+
+}
 
 class SPIFirmata: public FirmataFeature
 {

@@ -55,10 +55,10 @@ boolean SPIFirmata::handleSysex(byte command, byte argc, byte *argv)
       case SPI_BEGIN_TRANSACTION:
       {
         mDeviceId = argv[1] >> 2;
-        byte bitOrder = argv[2] & SPI_BIT_ORDER_MASK;
-        byte dataMode = argv[2] >> 1;
-        long clockSpeed = (long)argv[3] | ((long)argv[4] << 7) | ((long)argv[5] << 14) |
-                          ((long)argv[6] << 21) | ((long)argv[7] << 28);
+        uint8_t bitOrder = argv[2] & SPI_BIT_ORDER_MASK;
+        uint8_t dataMode = argv[2] >> 1;
+        uint32_t clockSpeed = (uint32_t)argv[3] | ((uint32_t)argv[4] << 7) | ((uint32_t)argv[5] << 14) |
+                          ((uint32_t)argv[6] << 21) | ((uint32_t)argv[7] << 28);
 
         if (argc > 8) {
           mCsPin = argv[8];
@@ -66,7 +66,7 @@ boolean SPIFirmata::handleSysex(byte command, byte argc, byte *argv)
           // protect the CS pin
           Firmata.setPinMode(mCsPin, PIN_MODE_SPI);
         }
-        SPISettings settings(clockSpeed, bitOrder, dataMode);
+        SPISettings settings(clockSpeed, getBitOrder(bitOrder), getDataMode(dataMode));
         SPI.beginTransaction(settings);
         break;
       }
@@ -137,14 +137,13 @@ void SPIFirmata::reset()
 
 void SPIFirmata::readWrite(byte channel, byte numBytes, byte argc, byte *argv)
 {
-  Firmata.sendString("readWrite");
   byte offset = 4; // mode + channel + opts + numBytes
+  byte buffer[numBytes];
+  byte bufferIndex = 0;
   if (numBytes * 2 != argc - offset) {
     // TODO - handle error
     Firmata.sendString("fails numBytes test");
   }
-  byte buffer[numBytes];
-  byte bufferIndex = 0;
   for (byte i = 0; i < numBytes * 2; i += 2) {
     bufferIndex = (i + 1) / 2;
     buffer[bufferIndex] = argv[i + offset + 1] << 7 | argv[i + offset];
@@ -154,38 +153,27 @@ void SPIFirmata::readWrite(byte channel, byte numBytes, byte argc, byte *argv)
   reply(channel, numBytes, buffer);
 }
 
-// TODO - eliminate duplication between readWrite and writeOnly
 void SPIFirmata::writeOnly(byte channel, byte numBytes, byte argc, byte *argv)
 {
-  Firmata.sendString("writeOnly");
   byte offset = 4;
+  byte txValue;
   if (numBytes * 2 != argc - offset) {
     // TODO - handle error
     Firmata.sendString("fails numBytes test");
   }
-
-  byte buffer[numBytes];
-  byte bufferIndex = 0;
   for (byte i = 0; i < numBytes * 2; i += 2) {
-    bufferIndex = (i + 1) / 2;
-    buffer[bufferIndex] = argv[i + offset + 1] << 7 | argv[i + offset];
+    txValue = argv[i + offset + 1] << 7 | argv[i + offset];
+    SPI.transfer(txValue);
   }
-  SPI.transfer(buffer, numBytes);
 }
 
-// TODO - combine readWrite and readOnly by sending zero for each byte read
-// in read-only mode.
-// That leaves us with read and writeOnly
 void SPIFirmata::readOnly(byte channel, byte numBytes)
 {
-  Firmata.sendString("readOnly");
-  byte buffer[numBytes];
+  byte replyData[numBytes];
   for (byte i = 0; i < numBytes; i++) {
-    buffer[i] = 0;
+    replyData[i] = SPI.transfer(0x00);
   }
-  SPI.transfer(buffer, numBytes);
-
-  reply(channel, numBytes, buffer);
+  reply(channel, numBytes, replyData);
 }
 
 void SPIFirmata::reply(byte channel, byte numBytes, byte *buffer)
