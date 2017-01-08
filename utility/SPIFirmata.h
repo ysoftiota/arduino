@@ -9,7 +9,7 @@
 
   See file LICENSE.txt for further informations on licensing terms.
 
-  Last updated January 3rd, 2017
+  Last updated January 7th, 2017
 */
 
 #ifndef SPIFirmata_h
@@ -41,10 +41,10 @@
 #define SPI_WRITE_ONLY              0x02
 
 // pinOptions
-#define SPI_CS_ACTIVE_MASK          0x04
-#define SPI_CS_INVERT_VAL_MASK      0x08
-#define SPI_CS_START_ONLY_MASK      0x10
-#define SPI_CS_END_ONLY_MASK        0x20
+#define SPI_CS_DISABLE_MASK         0x04
+#define SPI_CS_START_ONLY_MASK      0x08
+#define SPI_CS_END_ONLY_MASK        0x10
+#define SPI_CS_ACTIVE_EDGE_MASK     0x20
 #define SPI_CS_TOGGLE_MASK          0x40
 
 #define SPI_CHANNEL_MASK            0x03

@@ -9,7 +9,7 @@
 
   See file LICENSE.txt for further informations on licensing terms.
 
-  Last updated January 3rd, 2017
+  Last updated January 7th, 2017
 */
 
 #include "SPIFirmata.h"
@@ -64,6 +64,8 @@ boolean SPIFirmata::handleSysex(byte command, byte argc, byte *argv)
           mCsPin = argv[8];
           pinMode(mCsPin, OUTPUT);
           // protect the CS pin
+          // TODO - decide if this is the best approach. If PIN_MODE_SPI is set, the user cannot
+          // manually control the CS pin using DIGITAL_MESSAGE.
           Firmata.setPinMode(mCsPin, PIN_MODE_SPI);
         }
         SPISettings settings(clockSpeed, getBitOrder(bitOrder), getDataMode(dataMode));
@@ -78,7 +80,7 @@ boolean SPIFirmata::handleSysex(byte command, byte argc, byte *argv)
         byte transferOptions = argv[2] & SPI_TRANSFER_OPTS_MASK;
         byte numBytes = argv[3];
 
-        boolean csIsActive = false;
+        boolean csIsActive = true;
         byte csStartVal = LOW;
         byte csEndVal = HIGH;
         boolean csStartOnly = false;
@@ -87,16 +89,17 @@ boolean SPIFirmata::handleSysex(byte command, byte argc, byte *argv)
         //boolean csToggle = false;
 
         if (mCsPin >= 0) {
-          if (argv[2] & SPI_CS_ACTIVE_MASK) {
-            csIsActive = true;
+          if (argv[2] & SPI_CS_DISABLE_MASK) {
+            csIsActive = false;
+          } else {
             if (argv[2] & SPI_CS_START_ONLY_MASK) csStartOnly = true;
             if (argv[2] & SPI_CS_END_ONLY_MASK) csEndOnly = true;
-            // TODO - handle csToggle
-            // if (argv[2] & SPI_CS_TOGGLE_MASK) csToggle = true;
-            if (argv[2] & SPI_CS_INVERT_VAL_MASK) {
+            if (argv[2] & SPI_CS_ACTIVE_EDGE_MASK) {
               csStartVal = HIGH;
               csStartVal = LOW;
             }
+            // TODO - handle csToggle
+            // if (argv[2] & SPI_CS_TOGGLE_MASK) csToggle = true;
           }
         }
 
