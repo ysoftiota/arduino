@@ -63,11 +63,15 @@ boolean SPIFirmata::handleSysex(byte command, byte argc, byte *argv)
         if (argc > 8) {
           mCsPin = argv[8];
           pinMode(mCsPin, OUTPUT);
+          // TODO - need to know if the device is active LOW or active HIGH at this time.
+          digitalWrite(mCsPin, HIGH);
+
           // protect the CS pin
           // TODO - decide if this is the best approach. If PIN_MODE_SPI is set, the user cannot
           // manually control the CS pin using DIGITAL_MESSAGE.
           Firmata.setPinMode(mCsPin, PIN_MODE_SPI);
         }
+
         SPISettings settings(clockSpeed, getBitOrder(bitOrder), getDataMode(dataMode));
         SPI.beginTransaction(settings);
         break;

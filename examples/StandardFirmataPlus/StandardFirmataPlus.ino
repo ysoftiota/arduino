@@ -20,7 +20,7 @@
 
   See file LICENSE.txt for further informations on licensing terms.
 
-  Last updated October 16th, 2016
+  Last updated January 7th, 2017
 */
 
 /*
@@ -783,6 +783,7 @@ void systemResetCallback()
 
     servoPinMap[i] = 255;
   }
+
   // by default, do not report any analog inputs
   analogInputsToReport = 0;
 
