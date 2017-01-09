@@ -11,7 +11,7 @@
   Copyright (C) 2006-2008 Hans-Christoph Steiner.  All rights reserved.
   Copyright (C) 2010-2011 Paul Stoffregen.  All rights reserved.
   Copyright (C) 2009 Shigeru Kobayashi.  All rights reserved.
-  Copyright (C) 2009-2016 Jeff Hoefs.  All rights reserved.
+  Copyright (C) 2009-2017 Jeff Hoefs.  All rights reserved.
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@
 
   See file LICENSE.txt for further informations on licensing terms.
 
-  Last updated January 7th, 2017
+  Last updated January 8th, 2017
 */
 
 /*
@@ -384,11 +384,6 @@ void setPinModeCallback(byte pin, int mode)
     case PIN_MODE_SERIAL:
 #ifdef FIRMATA_SERIAL_FEATURE
       serialFeature.handlePinMode(pin, PIN_MODE_SERIAL);
-#endif
-      break;
-    case PIN_MODE_SPI:
-#ifdef FIRMATA_SPI_FEATURE
-      spiFeature.handlePinMode(pin, PIN_MODE_SPI);
 #endif
       break;
     default:
