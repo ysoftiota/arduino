@@ -46,11 +46,16 @@
 
 #include <Servo.h>
 #include <Wire.h>
+
+#include <Boards.h>
 #include <Firmata.h>
 
 // In order to use software serial, you will need to compile this sketch with
 // Arduino IDE v1.6.6 or higher. Hardware serial should work back to Arduino 1.0.
 #include "utility/SerialFirmata.h"
+
+#include "UserSysex.h"
+#include "RF.h"
 
 #define I2C_WRITE                   B00000000
 #define I2C_READ                    B00001000
@@ -511,6 +516,24 @@ void sysexCallback(byte command, byte argc, byte *argv)
   unsigned int delayTime;
 
   switch (command) {
+    /* 0x00-0x0F reserved for user-defined commands */
+    case 0x01:
+    case 0x02:
+    case 0x03:
+    case 0x04:
+    case 0x05:
+    case 0x06:
+    case 0x07:
+    case 0x08:
+    case 0x09:
+    case 0x0A:
+    case 0x0B:
+    case 0x0C:
+    case 0x0D:
+    case 0x0E:
+    case 0x0F:
+      userSysex(command, argc, argv);
+      break;
     case I2C_REQUEST:
       mode = argv[1] & I2C_READ_WRITE_MODE_MASK;
       if (argv[1] & I2C_10BIT_ADDRESS_MODE_MASK) {
@@ -779,7 +802,7 @@ void systemResetCallback()
 
 void setup()
 {
-  Firmata.setFirmwareVersion(FIRMATA_FIRMWARE_MAJOR_VERSION, FIRMATA_FIRMWARE_MINOR_VERSION);
+  Firmata.setFirmwareNameAndVersion("StandardFirmataPlus.ino", FIRMATA_FIRMWARE_MAJOR_VERSION, FIRMATA_FIRMWARE_MINOR_VERSION);
 
   Firmata.attach(ANALOG_MESSAGE, analogWriteCallback);
   Firmata.attach(DIGITAL_MESSAGE, digitalWriteCallback);
@@ -799,12 +822,19 @@ void setup()
   // Firmata.begin(Serial1);
   // However do not do this if you are using SERIAL_MESSAGE
 
-  Firmata.begin(57600);
-  while (!Serial) {
+  SerialUSB.begin(115200);
+  Firmata.begin(SerialUSB);
+  while (!SerialUSB) {
     ; // wait for serial port to connect. Needed for ATmega32u4-based boards and Arduino 101
   }
 
   systemResetCallback();  // reset to default config
+
+  // Initialize Radio
+  if (!rfInit()) {
+    Firmata.sendString("Unable to initialize radio");
+    while (true) {}
+  }
 }
 
 /*==============================================================================
@@ -848,4 +878,8 @@ void loop()
 #ifdef FIRMATA_SERIAL_FEATURE
   serialFeature.update();
 #endif
+
+  if (rfAvailable()) {
+    rfRecv();
+  }
 }

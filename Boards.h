@@ -299,6 +299,24 @@ writePort(port, value, bitmask):  Write an 8 bit port.
 #define PIN_TO_PWM(p)           PIN_TO_DIGITAL(p)
 #define PIN_TO_SERVO(p)         (p) // deprecated since v2.4
 
+// YSoft IOTA Play Board - based on Arduino Zero
+#elif defined(_VARIANT_IOTA_PLAY_1_0_)
+
+#define TOTAL_ANALOG_PINS       6
+#define TOTAL_PINS              32
+#define TOTAL_PORTS             4
+#define VERSION_BLINK_PIN       LED_BUILTIN
+#define IS_PIN_DIGITAL(p)       (((p) >= 0 && (p) <= 19) || ((p) == 25) || ((p) == 26) || ((p) == 30) || ((p) == 31))
+#define IS_PIN_ANALOG(p)        ((p) >= 14 && (p) < 14 + TOTAL_ANALOG_PINS)
+#define IS_PIN_PWM(p)           digitalPinHasPWM(p)
+#define IS_PIN_SERVO(p)         (IS_PIN_DIGITAL(p) && (p) < MAX_SERVOS) // deprecated since v2.4
+#define IS_PIN_I2C(p)           ((p) == 20 || (p) == 21) // SDA = 20, SCL = 21
+#define IS_PIN_SPI(p)           ((p) == SS || (p) == MOSI || (p) == MISO || (p) == SCK) // SS = A2
+#define IS_PIN_SERIAL(p)        ((p) == 0 || (p) == 1)
+#define PIN_TO_DIGITAL(p)       (p)
+#define PIN_TO_ANALOG(p)        ((p) - 14)
+#define PIN_TO_PWM(p)           PIN_TO_DIGITAL(p)
+#define PIN_TO_SERVO(p)         (p) // deprecated since v2.4
 
 // Arduino 101
 #elif defined(_VARIANT_ARDUINO_101_X_)
