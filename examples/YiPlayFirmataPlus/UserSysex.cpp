@@ -4,40 +4,23 @@
 #include "UserSysex.h"
 #include "YiPlayRF.h"
 
-char buffer[MAX_DATA_BYTES];
+byte buffer[MAX_DATA_BYTES];
 
-void encodeToBuffer(byte argc, byte *argv) {
-  byte j = 0;
-  byte i = 0;
-
-  while (j < argc && j < (MAX_DATA_BYTES - 1)) {
-    buffer[j] = argv[i];
-    i++;
-    buffer[j] += argv[i];
-    i++;
-    j++;
+byte decodeTwoBytes(const byte *data, byte datalen, byte *output) {
+  byte i;
+  if (datalen > MAX_DATA_BYTES * 2) datalen = MAX_DATA_BYTES * 2;
+  for (i = 0; i < datalen/2; i++) {
+    output[i] = data[2*i] + (data[2*i + 1] << 7);
   }
-
-  if (buffer[j - 1] != '\0') {
-    buffer[j] = '\0';
-  }
-}
-
-void debugCommand(byte command, byte argc, byte *argv) {
-  snprintf(buffer, MAX_DATA_BYTES , "Command %d", command);
-  Firmata.sendString(buffer);
-
-  encodeToBuffer(argc, argv);
-  Firmata.sendString(buffer);
+  return i;
 }
 
 void userSysex(byte command, byte argc, byte *argv) {
-  //debugCommand(command, argc, argv);
-
+  byte bufferLength;
   switch (command) {
     case USR_CMD_ECHO:
-      encodeToBuffer(argc, argv);
-      Firmata.sendSysex(USR_CMD_ECHO, strlen(buffer), (byte *)buffer);
+      bufferLength = decodeTwoBytes(argv, argc, buffer);
+      Firmata.sendSysex(USR_CMD_ECHO, bufferLength, buffer);
       break;
     case USR_CMD_RF_CONFIG:
       if (argc >= 4) {
@@ -47,18 +30,15 @@ void userSysex(byte command, byte argc, byte *argv) {
           for (uint8_t i = 0; i < 16; i++) {
             buffer[i] = argv[4 + 2*i] + (argv[5 + 2*i] << 7);
           }
-          setupRadio(networkID, nodeID, buffer);
+          setupRadio(networkID, nodeID, (char *)buffer);
         } else setupRadio(networkID, nodeID);
       }
       break;
     case USR_CMD_RF_DATA:
       if (argc >= 2) {
         uint8_t nodeID = argv[0] + (argv[1] << 7);
-        uint8_t datalen = (argc - 2) / 2;
-        for (uint8_t i = 0; i < datalen; i++) {
-          buffer[i] = argv[2 + 2*i] + (argv[3 + 2*i] << 7);
-        }
-        radio.sendWithRetry(nodeID, buffer, datalen, RFM69_RETRIES, RFM69_RETRY_DELAY);
+        bufferLength = decodeTwoBytes(argv + 2, argc - 2, buffer);
+        radio.sendWithRetry(nodeID, buffer, bufferLength, RFM69_RETRIES, RFM69_RETRY_DELAY);
       }
       break;
     case 0x04:
