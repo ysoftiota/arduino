@@ -2,7 +2,7 @@
 #include <Firmata.h>
 
 #include "UserSysex.h"
-#include "YSoftRF.h"
+#include "YiPlayRF.h"
 
 char buffer[MAX_DATA_BYTES];
 
@@ -32,7 +32,7 @@ void debugCommand(byte command, byte argc, byte *argv) {
 }
 
 void userSysex(byte command, byte argc, byte *argv) {
-  debugCommand(command, argc, argv);
+  //debugCommand(command, argc, argv);
 
   switch (command) {
     case USR_CMD_ECHO:

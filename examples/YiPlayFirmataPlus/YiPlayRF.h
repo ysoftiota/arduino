@@ -1,5 +1,5 @@
-#ifndef YSoftRF_h
-#define YSoftRF_h
+#ifndef YiPlayRF_h
+#define YiPlayRF_h
 
 #include <RFM69.h> // obtained from https://github.com/LowPowerLab/RFM69
 

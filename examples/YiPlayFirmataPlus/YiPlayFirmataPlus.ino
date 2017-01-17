@@ -55,7 +55,7 @@
 #include "utility/SerialFirmata.h"
 
 #include "UserSysex.h"
-#include "YSoftRF.h"
+#include "YiPlayRF.h"
 
 #define I2C_WRITE                   B00000000
 #define I2C_READ                    B00001000
@@ -802,7 +802,7 @@ void systemResetCallback()
 
 void setup()
 {
-  Firmata.setFirmwareNameAndVersion("YSoftFirmataPlus.ino", FIRMATA_FIRMWARE_MAJOR_VERSION, FIRMATA_FIRMWARE_MINOR_VERSION);
+  Firmata.setFirmwareNameAndVersion("YiPlayFirmataPlus", FIRMATA_FIRMWARE_MAJOR_VERSION, FIRMATA_FIRMWARE_MINOR_VERSION);
 
   Firmata.attach(ANALOG_MESSAGE, analogWriteCallback);
   Firmata.attach(DIGITAL_MESSAGE, digitalWriteCallback);
@@ -824,9 +824,6 @@ void setup()
 
   SerialUSB.begin(115200);
   Firmata.begin(SerialUSB);
-  while (!SerialUSB) {
-    ; // wait for serial port to connect. Needed for ATmega32u4-based boards and Arduino 101
-  }
 
   systemResetCallback();  // reset to default config
 }

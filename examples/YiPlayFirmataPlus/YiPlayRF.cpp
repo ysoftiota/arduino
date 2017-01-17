@@ -1,7 +1,7 @@
 #include <Boards.h>
 #include <Firmata.h>
 
-#include "YSoftRF.h"
+#include "YiPlayRF.h"
 #include "UserSysex.h"
 
 RFM69 radio(RFM69_NSS, RFM69_INTERRUPT_PIN, IS_RFM69HW, RFM69_INTERRUPT_NUM);
